@@ -418,6 +418,18 @@ nav {
 
 .about-image {
     flex: 1;
+
+    transition: all 0.5s ease;
+    overflow: hidden;
+    border-radius: 10px;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    transform-style: preserve-3d;
+    perspective: 1000px;
+}
+
+.about-image:hover {
+    transform: scale(1.02) rotate(2deg);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
 }
 
 .placeholder-image {
@@ -431,6 +443,27 @@ nav {
     font-size: 1.5rem;
     border-radius: 10px;
     box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    transition: all 0.5s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.placeholder-image::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0) 100%);
+    transform: rotate(45deg);
+    transition: all 0.8s ease;
+    opacity: 0;
+}
+
+.placeholder-image:hover::before {
+    animation: photoRotate 3s infinite ease-in-out;
+    opacity: 1;
 }
 
 .about-text {
@@ -440,16 +473,49 @@ nav {
 .about-text h3 {
     font-size: 2rem;
     margin-bottom: 20px;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all 0.5s ease;
+}
+
+.about-text.animated h3 {
+    transform: translateY(0);
+    opacity: 1;
 }
 
 .highlight {
     color: #e50914;
+    position: relative;
+    display: inline-block;
+}
+
+.highlight::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: #e50914;
+    transition: width 0.5s ease;
+}
+
+.about-text:hover .highlight::after {
+    width: 100%;
 }
 
 .about-text p {
     margin-bottom: 20px;
     color: #666;
     font-size: 1.1rem;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all 0.5s ease 0.2s;
+}
+
+.about-text.animated p {
+    transform: translateY(0);
+    opacity: 1;
 }
 
 .about-details {
@@ -460,17 +526,40 @@ nav {
 
 .detail {
     text-align: center;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all 0.5s ease 0.4s;
+}
+
+.about-text.animated .detail {
+    transform: translateY(0);
+    opacity: 1;
 }
 
 .detail i {
     font-size: 2rem;
     color: #e50914;
     margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+
+.detail:hover i {
+    transform: scale(1.2) rotate(10deg);
+    color: #ff0a17;
 }
 
 .detail h4 {
     font-size: 1.2rem;
     margin-bottom: 10px;
+}
+
+@keyframes photoRotate {
+    0% {
+        transform: rotate(45deg) translateX(-100%);
+    }
+    100% {
+        transform: rotate(45deg) translateX(100%);
+    }
 }
 
 /* 作品集部分 */

@@ -211,6 +211,17 @@ const portfolioItemsForFilter = document.querySelectorAll('.portfolio-item');
                 });
             }
         });
+        
+        // 为关于我部分添加动画
+        const aboutSection = document.querySelector('.about-text');
+        if (aboutSection) {
+            const aboutPosition = aboutSection.getBoundingClientRect().top;
+            const windowHeight = window.innerHeight;
+            
+            if (aboutPosition < windowHeight - 100) {
+                aboutSection.classList.add('animated');
+            }
+        }
     };
     
     // 添加鼠标悬停特效
