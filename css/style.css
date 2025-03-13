@@ -77,7 +77,7 @@ section {
     background-attachment: fixed;
     background-position: center;
     background-size: cover;
-    transition: all 0.5s ease-out;
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     will-change: background-position, transform;
     z-index: 1;
 }
@@ -93,7 +93,7 @@ section::before {
     z-index: -1;
     opacity: 0.8;
     pointer-events: none;
-    transition: all 0.5s ease;
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.05));
 }
 
@@ -704,58 +704,46 @@ nav {
 
 .skills-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 40px;
-    margin-bottom: 60px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
 }
 
-.skill-category h3 {
-    font-size: 1.5rem;
-    margin-bottom: 25px;
-    text-align: center;
-    color: #333;
+.skill-category {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.skill-category:hover {
+    transform: translateY(-5px);
 }
 
 .skill-item {
-    margin-bottom: 20px;
-}
-
-.skill-item span {
-    display: block;
-    margin-bottom: 10px;
-    font-weight: 500;
+    margin: 1.5rem 0;
 }
 
 .skill-bar {
-    height: 10px;
-    background-color: #eee;
-    border-radius: 5px;
+    height: 8px;
+    background: #f0f0f0;
+    border-radius: 4px;
     overflow: hidden;
 }
 
 .skill-level {
     height: 100%;
-    background-color: #e50914;
-    border-radius: 5px;
-    position: relative;
-    width: 0;
-    transition: width 1.5s ease-in-out;
+    background: #e50914;
+    transform: scaleX(0);
+    transform-origin: left;
+    animation: skill-fill 1s forwards;
+    animation-delay: 0.3s;
 }
 
-.skill-level::after {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 0;
-    height: 100%;
-    width: 8px;
-    background-color: rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    animation: pulse 1.5s infinite;
-}
-
-.animated .skill-level {
-    width: var(--skill-percent, 90%);
+@keyframes skill-fill {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
 }
 
 .software-skills {
@@ -1333,6 +1321,55 @@ nav {
   transform: translateY(-3px);
 }
 
+.skill-category:nth-child(5) {
+    background: linear-gradient(45deg, #43e97b, #38f9d7);
+}
+
+.skill-category:nth-child(5)::before {
+    content: '\f0c0';
+    color: #ffffff;
+}
+
 .contact-form .btn:hover {
     animation: buttonPulse 1.5s infinite;
+}
+
+/* 基础重置与移动优先设计 */
+:root {
+  --primary-color: #e50914;
+  --text-color: #f5f5f7;
+  --bg-gradient: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+}
+
+@media (min-width: 768px) {
+  /* 平板及以上设备专属样式 */
+  section .container {
+    padding: 4rem 8%;
+  }
+}
+
+/* 视差层优化 */
+.parallax-layer {
+  transform: translateZ(-1px) scale(2);
+  will-change: transform;
+}
+
+/* 移动端导航优化 */
+@media (max-width: 767px) {
+  nav {
+    flex-wrap: wrap;
+    padding: 1rem 5%;
+  }
+  
+  .timeline-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* 新增注释说明 */
+/* 动态背景容器 - 用于Canvas动画层 */
+.dynamic-bg {
+  pointer-events: none;
+  z-index: -1;
 }

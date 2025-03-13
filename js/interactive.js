@@ -113,58 +113,69 @@ document.addEventListener('DOMContentLoaded', function() {
     createCanvasBackground();
     
     // 增强的视差滚动效果
+    const throttleScroll = (function() {
+        let lastTime = 0;
+        const limit = 16; // 约60fps的刷新率
+        return function(callback) {
+            const now = Date.now();
+            if (now - lastTime >= limit) {
+                callback();
+                lastTime = now;
+            }
+        };
+    })();
+
     window.addEventListener('scroll', function() {
-        const scrollPosition = window.scrollY;
-        const windowHeight = window.innerHeight;
-        const documentHeight = document.documentElement.scrollHeight;
-        
-        // 更新滚动进度指示器
-        const scrollProgress = scrollPosition / (documentHeight - windowHeight);
-        
-        // 为各个部分添加视差效果
-        document.querySelectorAll('section').forEach((section, index) => {
-            const sectionTop = section.offsetTop;
-            const sectionHeight = section.offsetHeight;
-            const sectionMiddle = sectionTop + sectionHeight / 2;
+        throttleScroll(() => {
+            const scrollPosition = window.scrollY;
+            const windowHeight = window.innerHeight;
+            const documentHeight = document.documentElement.scrollHeight;
             
-            // 计算section在视口中的位置比例 (-1到1之间)
-            const viewportPosition = (sectionMiddle - scrollPosition - windowHeight / 2) / windowHeight;
+            // 更新滚动进度指示器
+            const scrollProgress = scrollPosition / (documentHeight - windowHeight);
             
-            // 计算背景位移 - 增强视差效果
-            const backgroundShift = viewportPosition * 60; // 增强视差强度
-            
-            // 应用背景位移 - 使用更平滑的过渡
-            section.style.backgroundPositionY = `calc(50% + ${backgroundShift}px)`;
-            
-            // 为内容添加轻微的视差效果
-            const contentElements = section.querySelectorAll('.container > *');
-            contentElements.forEach((element, elementIndex) => {
-                const delay = elementIndex * 0.05;
-                const elementShift = viewportPosition * 20 * (1 - delay); // 减小内容的视差强度
-                element.style.transform = `translateY(${elementShift}px)`;
+            // 为各个部分添加视差效果
+            document.querySelectorAll('section').forEach((section, index) => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.offsetHeight;
+                const sectionMiddle = sectionTop + sectionHeight / 2;
+                
+                // 计算section在视口中的位置比例 (-1到1之间)
+                const viewportPosition = (sectionMiddle - scrollPosition - windowHeight / 2) / windowHeight;
+                
+                // 减小视差效果强度
+                const backgroundShift = viewportPosition * 30; // 降低视差强度
+                
+                // 应用背景位移 - 使用更平滑的过渡
+                section.style.backgroundPositionY = `calc(50% + ${backgroundShift}px)`;
+                
+                // 为内容添加更轻微的视差效果
+                const contentElements = section.querySelectorAll('.container > *');
+                contentElements.forEach((element, elementIndex) => {
+                    const delay = elementIndex * 0.03; // 减小延迟时间
+                    const elementShift = viewportPosition * 10 * (1 - delay); // 大幅减小内容的视差强度
+                    element.style.transform = `translateY(${elementShift}px)`;
+                });
+                
+                // 为视差层添加温和效果
+                const parallaxLayer = section.querySelector('.parallax-layer');
+                if (parallaxLayer) {
+                    const layerShift = viewportPosition * 50; // 减小视差层的视差强度
+                    const rotationEffect = viewportPosition * 0.3; // 减小旋转效果
+                    parallaxLayer.style.transform = `translateY(${layerShift}px) rotate(${rotationEffect}deg)`;
+                    const opacityChange = 0.6 + (Math.abs(viewportPosition) * 0.05); // 减小透明度变化
+                    parallaxLayer.style.opacity = opacityChange.toFixed(2);
+                }
+                
+                // 为动态背景添加更平滑的效果
+                const dynamicBg = section.querySelector('.dynamic-bg');
+                if (dynamicBg) {
+                    const bgShift = -viewportPosition * 20; // 减小背景移动幅度
+                    dynamicBg.style.transform = `translateY(${bgShift}px)`;
+                }
             });
-            
-            // 为视差层添加增强效果
-            const parallaxLayer = section.querySelector('.parallax-layer');
-            if (parallaxLayer) {
-                const layerShift = viewportPosition * 100; // 进一步增强视差层的视差强度
-                // 添加旋转效果增强动态感
-                const rotationEffect = viewportPosition * 0.5; // 轻微旋转
-                parallaxLayer.style.transform = `translateY(${layerShift}px) rotate(${rotationEffect}deg)`;
-                // 动态调整不透明度增强层次感
-                const opacityChange = 0.5 + (Math.abs(viewportPosition) * 0.1);
-                parallaxLayer.style.opacity = opacityChange.toFixed(2);
-            }
-            
-            // 为动态背景添加连续效果
-            const dynamicBg = section.querySelector('.dynamic-bg');
-            if (dynamicBg) {
-                // 反向移动背景增强视差感
-                const bgShift = -viewportPosition * 40; // 反向移动
-                dynamicBg.style.transform = `translateY(${bgShift}px)`;
-            }
         });
-    });
+    }, { passive: true });
     
     // 鼠标移动跟随效果已移除，保留滚动效果
     
@@ -389,10 +400,81 @@ const initTimelineInteraction = function() {
     });
 };
 
+// 视差效果核心函数
+function createParallaxEffects() {
+  // 缓存视口尺寸
+  const viewport = {
+    width: window.innerWidth,
+    height: window.innerHeight
+  };
+
+  // 统一处理所有视差元素
+  function updateParallaxElements(scrollPos) {
+    document.querySelectorAll('section').forEach((section, index) => {
+      const sectionRect = section.getBoundingClientRect();
+      const progress = (sectionRect.top + scrollPos) / (viewport.height * 2);
+      
+      applySectionParallax(section, progress);
+      applyContentParallax(section, progress);
+      applyLayerEffects(section, progress);
+    });
+  }
+
+  // 节流滚动处理
+  const throttleScroll = (function() {
+    let lastTime = 0;
+    return function(callback, limit = 100) {
+      const now = Date.now();
+      if (now - lastTime >= limit) {
+        callback();
+        lastTime = now;
+      }
+    };
+  })();
+
+  // 初始化滚动监听
+  function initScrollListener() {
+    window.addEventListener('scroll', () => {
+      throttleScroll(() => {
+        updateParallaxElements(window.scrollY);
+      });
+    }, { passive: true });
+  }
+
+  return {
+    init: initScrollListener
+  };
+}
+
 // 在页面加载完成后初始化时间轴交互功能
 document.addEventListener('DOMContentLoaded', function() {
     // 其他初始化代码...
     
-    // 初始化时间轴交互
+    // 删除重复的initTimelineInteraction函数定义
     initTimelineInteraction();
+});
+
+// 滚动动画触发
+const animateOnScroll = () => {
+    const elements = document.querySelectorAll('.animate-on-scroll');
+    elements.forEach(el => {
+        const elementTop = el.getBoundingClientRect().top;
+        if (elementTop < window.innerHeight * 0.8) {
+            el.classList.add('visible');
+        }
+    });
+};
+
+// 技能条动画延迟触发
+const animateSkillBars = () => {
+    document.querySelectorAll('.skill-level').forEach((bar, index) => {
+        bar.style.animationDelay = `${index * 0.2}s`;
+    });
+};
+
+// 初始化事件监听
+window.addEventListener('scroll', animateOnScroll);
+window.addEventListener('load', () => {
+    animateOnScroll();
+    animateSkillBars();
 });
